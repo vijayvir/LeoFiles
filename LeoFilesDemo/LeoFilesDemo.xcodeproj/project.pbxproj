@@ -13,6 +13,7 @@
 		183984FC22D5AE3B00242B93 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 183984FB22D5AE3B00242B93 /* Assets.xcassets */; };
 		183984FF22D5AE3B00242B93 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 183984FD22D5AE3B00242B93 /* LaunchScreen.storyboard */; };
 		1839850722D5AEA000242B93 /* LeoFilesUIButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1839850622D5AEA000242B93 /* LeoFilesUIButton.swift */; };
+		18A01E9522D84B1900199C41 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 18A01E9422D84B1900199C41 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		183984FE22D5AE3B00242B93 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1839850022D5AE3B00242B93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1839850622D5AEA000242B93 /* LeoFilesUIButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LeoFilesUIButton.swift; sourceTree = "<group>"; };
+		18A01E9422D84B1900199C41 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 			children = (
 				183984F422D5AE3900242B93 /* AppDelegate.swift */,
 				183984F622D5AE3900242B93 /* ViewController.swift */,
+				18A01E9422D84B1900199C41 /* README.md */,
 				1839850622D5AEA000242B93 /* LeoFilesUIButton.swift */,
 				183984F822D5AE3900242B93 /* Main.storyboard */,
 				183984FB22D5AE3B00242B93 /* Assets.xcassets */,
@@ -127,6 +130,7 @@
 			files = (
 				183984FF22D5AE3B00242B93 /* LaunchScreen.storyboard in Resources */,
 				183984FC22D5AE3B00242B93 /* Assets.xcassets in Resources */,
+				18A01E9522D84B1900199C41 /* README.md in Resources */,
 				183984FA22D5AE3900242B93 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
