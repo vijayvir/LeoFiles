@@ -10,9 +10,27 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    @IBOutlet weak var btnFiles: LeoFilesUIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        btnFiles.withClosureDidPickDocumentAt { (arg0) in
+            
+            let (directory, filenameOnly, ext) = arg0
+            print(directory , "filenameOnly  " , filenameOnly , "ext  "  , ext)
+            }.withClosureDidDocumentMenuWasCancelled {
+                print("Cancel")
+            }.withClosureDidTapCancelImagePicker {
+                 print("Cancel")
+            }.withClosureDidFinishPickingAnUIImaget({ (image, arg0 ) in
+                
+                let (directory, filenameOnly, ext) = arg0
+                    print(directory , "filenameOnly  " , filenameOnly , "ext  "  , ext)
+            })
+            
+            .withStop()
+        
+        
+ 
     }
 
 
