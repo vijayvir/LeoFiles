@@ -4,8 +4,11 @@
 
 import UIKit
 import Foundation
-
+import Photos
 import MobileCoreServices
+/**
+ - Author: Vijavir
+ */
 // last updations on Apple Swift version 3.0.1 (swiftlang-800.0.58.6 clang-800.0.42.1)
 /*
  Main purpose of this class is to store images in file managers and store paths in array and return that array of paths*  to class through  delegate  or closure
@@ -40,10 +43,19 @@ import MobileCoreServices
  }
  }
  */
+
 extension FileManager {
     class func documentsDir() -> String {
-        var paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as [String]
-        return paths[0]
+        
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        return documentsDirectory.path
+        
+        
+        
+        
+//        var paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as [String]
+//        return paths[0]
     }
     
     class func cachesDir() -> String {
@@ -58,7 +70,8 @@ extension FileManager {
 
 fileprivate  let appNameUIPhotosButtonLeoFiles = Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String
 
-fileprivate let rootFolderLeoFiles: String = "\(FileManager.documentsDir())/LeoFilesUIButton/"
+ let rootFolderLeoFiles: String = "\(FileManager.documentsDir())/LeoFilesUIButton/"
+//fileprivate let rootFolderLeoFiles: String = "\(FileManager.NSTemporaryDirectory())/LeoFilesUIButton/"
 
 class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -74,7 +87,7 @@ class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationC
     
     // Use this class to have multiple images .
     
-    private var folderName: String? =  nil
+     private var folderName: String? =  nil
     
     final  public  func withFolderName(_  value : String) -> LeoFilesUIButton{
         
@@ -92,7 +105,7 @@ class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationC
     private  var closureDidFinishPickingAnUIImage: ((_ image: UIImage , _ file: (directory: String, filenameOnly: String, ext: String) ) -> Void)?
     
     public  var closureDidTap: (() -> Void)?
-    
+    var popOver:UIPopoverController?
     
     
     
@@ -112,16 +125,36 @@ class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationC
         self.addTarget(self, action: #selector(addPhoto),
                        for: .touchUpInside)
         
+        
+        
+        
     }
     
-    // MARK: Actions
-    
-    // MARK: Functions
-    
+    func checkPermission() {
+        let photoAuthorizationStatus = PHPhotoLibrary.authorizationStatus()
+        switch photoAuthorizationStatus {
+        case .authorized:
+            print("Access is granted by user")
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization({
+                (newStatus) in
+                print("status is \(newStatus)")
+                if newStatus ==  PHAuthorizationStatus.authorized {
+                    /* do stuff here */
+                    print("success")
+                }
+            })
+            print("It is not determined until now")
+        case .restricted:
+            // same same
+            print("User do not have access to photo album.")
+        case .denied:
+            // same same
+            print("User has denied the permission.")
+        }
+    }
+
     // MARK: Modifier
-    
-    
-    
     
     func withClosureDidTapCancelImagePicker( _ closure :  @escaping   (() -> Void)  ) -> LeoFilesUIButton {
         
@@ -175,7 +208,7 @@ class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationC
         if nestedFolder != nil {
             some =  rootFolderLeoFiles + nestedFolder! + "/"
         }
-        
+  
         if !fileManger.fileExists(atPath: some) {
             do {
                 try fileManger.createDirectory(atPath: "\(some)", withIntermediateDirectories: false, attributes: nil)
@@ -204,8 +237,8 @@ class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationC
         LeoFilesAlertHelper.alertView(title: appNameUIPhotosButtonLeoFiles,
                                       message: "Select File from options.",
                                       preferredStyle: style,
-                                      cancelTilte: "Cancel",
-                                      otherButtons: "Camera", "Gallery" , "Document",
+                                      cancelTilte: "Cancel".leoLocalized(),
+                                      otherButtons: "Camera".leoLocalized(), "Gallery".leoLocalized() , "Document".leoLocalized(),
                                       comletionHandler: { (index: Swift.Int) in
                                         
                                         print(index)
@@ -253,12 +286,47 @@ class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationC
         imagePicker.allowsEditing = false
         
         imagePicker.sourceType = .photoLibrary
+        if UIDevice.current.userInterfaceIdiom == .pad {
+                        //let keywindow = UIApplication.shared.keyWindow
+        }
+        if UIDevice.current.userInterfaceIdiom == .pad
+        {
+            
+            
+            imagePicker.modalPresentationStyle = UIModalPresentationStyle.popover
+  
+            
+  
+            
+            OperationQueue().addOperation({
+                print("WORKING...")
+                OperationQueue.main.addOperation({
+                    self.viewcontoller?.present(imagePicker, animated: false, completion: nil)
+                    
+                    let popoverPresentationController = imagePicker.popoverPresentationController
+                    popoverPresentationController?.sourceView = self
+                    
+                })
+            })
+            
+            
+        }
+        else
+        {
+            OperationQueue().addOperation({
+                print("WORKING...")
+                OperationQueue.main.addOperation({
+                    self.viewcontoller?.present(imagePicker, animated: false, completion: nil)
+                })
+            })
+            
+            
+        }
         
-        let keywindow = UIApplication.shared.keyWindow
         
         //  let mainController = keywindow?.rootViewController
         
-        viewcontoller?.present(imagePicker, animated: true, completion: nil)
+    
     }
     
     private func camera() {
@@ -269,17 +337,52 @@ class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationC
         imagePicker.allowsEditing = false
         
         imagePicker.sourceType = .camera
-        
-        let keywindow = UIApplication.shared.keyWindow
-        
+   
+        if UIDevice.current.userInterfaceIdiom == .pad
+        {
+            
+            
+            imagePicker.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+            
+            
+            
+            
+            OperationQueue().addOperation({
+                print("WORKING...")
+                OperationQueue.main.addOperation({
+                    self.viewcontoller?.present(imagePicker, animated: false, completion: nil)
+                    
+                    let popoverPresentationController = imagePicker.popoverPresentationController
+                    popoverPresentationController?.sourceView = self
+                    
+                })
+            })
+            
+            
+        }
+        else
+        {
+            OperationQueue().addOperation({
+                print("WORKING...")
+                OperationQueue.main.addOperation({
+                    self.viewcontoller?.present(imagePicker, animated: false, completion: nil)
+                })
+            })
+            
+            
+        }
+
         //   let mainController = keywindow?.rootViewController
         
-        viewcontoller?.present(imagePicker, animated: true, completion: nil)
+     
     }
     
     // MARK: ImagePicker view Delegate
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+   
+    
+    
+internal func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         
         let filePath = URL(fileURLWithPath: LeoFilesUIButton.photoPath(folderName) + "\(NSUUID().uuidString)").appendingPathExtension("jpg")
@@ -287,59 +390,62 @@ class LeoFilesUIButton: UIButton, UIImagePickerControllerDelegate, UINavigationC
         imagePaths.append(filePath.path)
         let some = splitFilename(str: "\(filePath)")
         
-        print(filePath.path)
+       // print(filePath.path)
         
         let image = info[.originalImage] as! UIImage
-        self.closureDidFinishPickingAnUIImage?(image, (filePath.path ,some.filenameOnly , some.ext  ))
-        
-        let imageData = image.jpegData(compressionQuality: 0.3)
+    
+        let imageData = image.jpegData(compressionQuality: 0.1)
         
         do {
-            try imageData?.write(to: filePath, options: .atomic)
+            try imageData?.write(to: filePath)
+            self.closureDidFinishPickingAnUIImage?(image, (filePath.path ,some.filenameOnly , some.ext  ))
             
             closureDidFinishPickingImagesWithPath?([filePath.path])
+            
+
+            viewcontoller?.dismiss(animated: false, completion: { [unowned self] () in
+                
+                if self.isSingle {
+                    
+                    self.closureDidFinishPicking?(self.imagePaths)
+                    
+                } else {
+                    var style : UIAlertController.Style = .actionSheet
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        style = .alert
+                    }
+                    
+                    LeoFilesAlertHelper.alertView(imagesPath: self.imagePaths, message: "Would you like  to select more pictures ", preferredStyle: style,
+                                                  cancelTilte: "No",
+                                                  otherButtons: "Camera".leoLocalized(), "Gallery".leoLocalized(),
+                                                  comletionHandler: { [unowned self] (index: Swift.Int) in
+                                                    
+                                                    print(index)
+                                                    
+                                                    if index == 0 {
+                                                        
+                                                        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerController.SourceType.camera) {
+                                                            self.camera()
+                                                        } else {
+                                                            self.gallery()
+                                                        }
+                                                    } else if index == 1 {
+                                                        self.gallery()
+                                                    } else if index == 2 {
+                                                        self.closureDidFinishPicking?(self.imagePaths)
+                                                    }
+                    })
+                }
+            })
             
         } catch {
             print(error)
         }
         
-        picker.dismiss(animated: true, completion: { [unowned self] () in
-            
-            if self.isSingle {
-                
-                self.closureDidFinishPicking?(self.imagePaths)
-                
-            } else {
-                var style : UIAlertController.Style = .actionSheet
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    style = .alert
-                }
-                
-                LeoFilesAlertHelper.alertView(imagesPath: self.imagePaths, message: "Would you like  to select more pictures ", preferredStyle: style,
-                                              cancelTilte: "No",
-                                              otherButtons: "Camera", "Gallery",
-                                              comletionHandler: { [unowned self] (index: Swift.Int) in
-                                                
-                                                print(index)
-                                                
-                                                if index == 0 {
-                                                    
-                                                    if UIImagePickerController.isSourceTypeAvailable(UIImagePickerController.SourceType.camera) {
-                                                        self.camera()
-                                                    } else {
-                                                        self.gallery()
-                                                    }
-                                                } else if index == 1 {
-                                                    self.gallery()
-                                                } else if index == 2 {
-                                                    self.closureDidFinishPicking?(self.imagePaths)
-                                                }
-                })
-            }
-        })
+   
     }
     
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+      @objc  func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: { [unowned self] () in
             self.closureDidFinishPicking?(self.imagePaths)
         })
@@ -377,8 +483,7 @@ extension  LeoFilesUIButton :    UIDocumentPickerDelegate {
         let some = splitFilename(str: "\(myURL)")
         
         //var tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
-        
-        let filePath = URL(fileURLWithPath: LeoFilesUIButton.photoPath(folderName) + some.filenameOnly).appendingPathExtension(some.ext)
+        let filePath = URL(fileURLWithPath: LeoFilesUIButton.photoPath(folderName) +  "\(NSUUID().uuidString)" ).appendingPathExtension(some.ext)
         
         
         // Apend filename (name+extension) to URL
@@ -391,7 +496,7 @@ extension  LeoFilesUIButton :    UIDocumentPickerDelegate {
             // Move file from app_id-Inbox to tmp/filename
             try FileManager.default.moveItem(atPath: url.path, toPath: filePath.path)
             
-            closureDidPickDocumentAt?(( filePath.path , some.filenameOnly , some.ext ) )
+            closureDidPickDocumentAt?(( filePath.path , filePath.deletingPathExtension().lastPathComponent , some.ext ) )
             
             
             //            self.arrayDoc.append(tempURL)
@@ -520,14 +625,17 @@ class LeoFilesAlertHelper: UIAlertController {
 extension UIApplication {
     
     class func leoFileTopViewController(controller: UIViewController? = UIApplication.shared.keyWindow?.rootViewController) -> UIViewController? {
+        
         if let navigationController = controller as? UINavigationController {
             return leoFileTopViewController(controller: navigationController.visibleViewController)
         }
+    
         if let tabController = controller as? UITabBarController {
             if let selected = tabController.selectedViewController {
                 return leoFileTopViewController(controller: selected)
             }
         }
+        
         if let presented = controller?.presentedViewController {
             return leoFileTopViewController(controller: presented)
         }
